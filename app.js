@@ -152,9 +152,19 @@ function renderDetails() {
     rewardItems.forEach(item => {
       const li = document.createElement("li");
       li.className = "reward-item";
-      const imageHtml = item.image ? `<img class="reward-item-image" src="${escapeHtml(item.image)}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span class="reward-item-placeholder">🎁</span>`;
-      const contentsHtml = item.contents ? `<small class="reward-item-contents">${escapeHtml(item.contents)}</small>` : "";
-      li.innerHTML = `${imageHtml}<span class="reward-item-info"><span>${escapeHtml(item.name)}</span>${contentsHtml}</span><strong>× ${Number(item.quantity || 1)}</strong>`;
+      const firstImage = item.image1 || item.image || "";
+      const secondImage = item.image2 || "";
+      const image1Html = firstImage
+        ? `<img class="reward-item-image" src="${escapeHtml(firstImage)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+        : `<span class="reward-item-placeholder">🎁</span>`;
+      const image2Html = secondImage
+        ? `<img class="reward-item-image" src="${escapeHtml(secondImage)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+        : `<span class="reward-item-placeholder secondary-placeholder">+</span>`;
+      li.innerHTML = `
+        <span class="reward-item-images">${image1Html}${image2Html}</span>
+        <span class="reward-item-info"><span>${escapeHtml(item.name)}</span></span>
+        <strong>× ${Number(item.quantity || 1)}</strong>
+      `;
       rewardItemsList.appendChild(li);
     });
   } else {
@@ -254,21 +264,23 @@ function createRewardRow(item = {}) {
   const row = document.createElement("div");
   row.className = "reward-row";
 
-  const image = item.image || "";
-  const quantity = Math.max(1, Number(item.quantity || 1));
-  const contents = item.contents || "";
+  const image1 = item.image1 || item.image || "";
+  const image2 = item.image2 || "";
+  const quantity = Number(item.quantity || 1);
 
   row.innerHTML = `
-    <label class="reward-upload-square" title="Wybierz grafikę z pulpitu">
-      <input class="reward-file-input" type="file" accept="image/*" hidden>
-      <span class="reward-upload-plus">+</span>
+    <label class="reward-image-square" title="Wybierz pierwszą grafikę">
+      <input class="reward-file-input reward-file-input-1" type="file" accept="image/*" hidden>
+      <span class="reward-square-content reward-square-content-1">
+        ${image1 ? `<img src="${escapeHtml(image1)}" alt="Pierwsza grafika">` : `<span class="reward-upload-plus">+</span>`}
+      </span>
     </label>
 
-    <label class="reward-preview-square" title="Kliknij, aby wybrać lub zmienić grafikę">
-      <input class="reward-file-input-preview" type="file" accept="image/*" hidden>
-      ${image
-        ? `<img src="${escapeHtml(image)}" alt="Podgląd przedmiotu">`
-        : `<span class="reward-preview-empty">🖼️</span>`}
+    <label class="reward-image-square" title="Wybierz drugą grafikę">
+      <input class="reward-file-input reward-file-input-2" type="file" accept="image/*" hidden>
+      <span class="reward-square-content reward-square-content-2">
+        ${image2 ? `<img src="${escapeHtml(image2)}" alt="Druga grafika">` : `<span class="reward-upload-plus">+</span>`}
+      </span>
     </label>
 
     <div class="reward-row-main">
@@ -276,45 +288,38 @@ function createRewardRow(item = {}) {
         Nazwa przedmiotu
         <input class="reward-name-input" type="text" value="${escapeHtml(item.name || "")}" placeholder="Np. Mikstura leczenia">
       </label>
-      <div class="reward-row-subfields">
-        <label>
-          Ilość
-          <input class="reward-quantity-input" type="number" min="1" value="${quantity}">
-        </label>
-        <label>
-          Zawartość / opis (opcjonalnie)
-          <input class="reward-contents-input" type="text" value="${escapeHtml(contents)}" placeholder="Np. Mikstura ×5; Klucz ×1">
-        </label>
-      </div>
+      <label class="reward-quantity-label">
+        Ilość
+        <input class="reward-quantity-input" type="number" min="1" value="${quantity}">
+      </label>
     </div>
 
     <button class="reward-remove-btn" type="button" aria-label="Usuń przedmiot" title="Usuń przedmiot">✕</button>
-    <input class="reward-image-data" type="hidden" value="${escapeHtml(image)}">
+    <input class="reward-image-data-1" type="hidden" value="${escapeHtml(image1)}">
+    <input class="reward-image-data-2" type="hidden" value="${escapeHtml(image2)}">
   `;
 
-  const imageData = row.querySelector(".reward-image-data");
-  const previewSquare = row.querySelector(".reward-preview-square");
-  const picker1 = row.querySelector(".reward-file-input");
-  const picker2 = row.querySelector(".reward-file-input-preview");
+  function bindImagePicker(slot) {
+    const picker = row.querySelector(`.reward-file-input-${slot}`);
+    const content = row.querySelector(`.reward-square-content-${slot}`);
+    const dataInput = row.querySelector(`.reward-image-data-${slot}`);
 
-  function loadSelectedImage(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = String(reader.result || "");
-      imageData.value = dataUrl;
-      previewSquare.innerHTML = `
-        <input class="reward-file-input-preview" type="file" accept="image/*" hidden>
-        <img src="${dataUrl}" alt="Podgląd przedmiotu">
-      `;
-      const replacementPicker = previewSquare.querySelector(".reward-file-input-preview");
-      replacementPicker.addEventListener("change", () => loadSelectedImage(replacementPicker.files?.[0]));
-    };
-    reader.readAsDataURL(file);
+    picker.addEventListener("change", () => {
+      const file = picker.files && picker.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result;
+        dataInput.value = dataUrl;
+        content.innerHTML = `<img src="${dataUrl}" alt="Grafika przedmiotu">`;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
-  picker1.addEventListener("change", () => loadSelectedImage(picker1.files?.[0]));
-  picker2.addEventListener("change", () => loadSelectedImage(picker2.files?.[0]));
+  bindImagePicker(1);
+  bindImagePicker(2);
 
   row.querySelector(".reward-remove-btn").addEventListener("click", () => {
     row.remove();
@@ -338,8 +343,8 @@ function collectRewardItems() {
     .map(row => ({
       name: row.querySelector(".reward-name-input").value.trim(),
       quantity: Math.max(1, Number(row.querySelector(".reward-quantity-input").value) || 1),
-      contents: row.querySelector(".reward-contents-input").value.trim(),
-      image: row.querySelector(".reward-image-data").value || ""
+      image1: row.querySelector(".reward-image-data-1").value || "",
+      image2: row.querySelector(".reward-image-data-2").value || ""
     }))
     .filter(item => item.name);
 }
