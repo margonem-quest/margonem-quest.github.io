@@ -501,3 +501,4 @@ footer {
 .step-text u {
   text-underline-offset: 3px;
 }
+.category-folders{display:grid;gap:8px;margin-top:16px}.category-folder{text-align:left;padding:11px 13px;border:1px solid var(--border);border-radius:13px;color:var(--text);background:var(--panel-2);font-weight:800}.category-folder:hover,.category-folder.active{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}.reward-items-list li.reward-item{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:12px}.reward-item-image,.reward-item-placeholder{width:46px;height:46px;border-radius:10px}.reward-item-image{object-fit:contain;background:rgba(255,255,255,.04)}.reward-item-placeholder{display:grid;place-items:center;border:1px solid var(--border);font-size:1.3rem}.reward-item-info{min-width:0;display:grid;gap:4px}.reward-item-contents{color:var(--muted);line-height:1.35}
