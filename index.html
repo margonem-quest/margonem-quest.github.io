@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Nieoficjalna pomoc do questów w Margonem." />
+  <title>Margonem Quest ( Beta)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div>
+        <p class="eyebrow">Nieoficjalny projekt fanowski</p>
+        <h1>Margonem Quest ( Beta)</h1>
+        <p class="subtitle">Szybko znajdź questa, sprawdź kolejne kroki i zaznacz swój postęp.</p>
+      </div>
+      <button id="themeToggle" class="ghost-btn" type="button" aria-label="Zmień motyw">🌙</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel search-panel">
+      <label for="searchInput">Szukaj questa</label>
+      <div class="search-row">
+        <input id="searchInput" type="search" placeholder="Np. Zaginiony zwiadowca..." autocomplete="off" />
+        <select id="levelFilter" aria-label="Filtr poziomu">
+          <option value="all">Każdy poziom</option>
+          <option value="1-20">1–20</option>
+          <option value="21-50">21–50</option>
+          <option value="51+">51+</option>
+        </select>
+      </div>
+      <p id="resultsInfo" class="muted"></p>
+    </section>
+
+    <section class="layout">
+      <aside class="panel quest-list-panel">
+        <div class="section-heading">
+          <h2>Questy</h2>
+          <button id="showAddFormBtn" class="primary-btn small-btn" type="button">+ Dodaj</button>
+        </div>
+        <div id="questList" class="quest-list"></div>
+      </aside>
+
+      <section class="panel quest-details-panel">
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">🗺️</div>
+          <h2>Wybierz questa</h2>
+          <p>Po lewej stronie znajdziesz dostępne zadania. Kliknij jedno z nich, aby zobaczyć szczegóły.</p>
+        </div>
+
+        <article id="questDetails" class="hidden">
+          <div class="quest-topline">
+            <div>
+              <p id="questMeta" class="eyebrow"></p>
+              <h2 id="questTitle"></h2>
+            </div>
+            <div class="quest-actions">
+              <button id="editQuestBtn" class="ghost-btn" type="button">✏️ Edytuj questa</button>
+              <button id="resetProgressBtn" class="ghost-btn danger" type="button">Reset postępu</button>
+            </div>
+          </div>
+
+          <p id="questDescription" class="quest-description"></p>
+
+          <div class="info-grid">
+            <div>
+              <span>Start</span>
+              <strong id="questStart"></strong>
+            </div>
+            <div>
+              <span>Doświadczenie</span>
+              <strong id="questExperience"></strong>
+            </div>
+            <div>
+              <span>Złoto</span>
+              <strong id="questGold"></strong>
+            </div>
+          </div>
+
+          <div id="rewardItemsSection">
+            <h3>Przedmioty w nagrodzie</h3>
+            <ul id="rewardItemsList" class="reward-items-list"></ul>
+          </div>
+
+          <h3>Kroki questa</h3>
+          <ol id="stepsList" class="steps-list"></ol>
+        </article>
+      </section>
+    </section>
+
+    <section id="addQuestPanel" class="panel add-panel hidden">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Własna baza</p>
+          <h2 id="questFormTitle">Dodaj nowego questa</h2>
+        </div>
+        <button id="closeAddFormBtn" class="ghost-btn" type="button">✕</button>
+      </div>
+
+      <form id="addQuestForm" class="quest-form">
+        <input type="hidden" name="editId" value="" />
+        <div class="form-grid">
+          <label>
+            Nazwa questa
+            <input name="title" required placeholder="Np. Tajemnica starej wieży" />
+          </label>
+          <label>
+            Poziom
+            <input name="level" type="number" min="1" required placeholder="25" />
+          </label>
+          <label>
+            NPC / miejsce startu
+            <input name="start" required placeholder="Np. Ithan — Strażnik" />
+          </label>
+          <label>
+            Doświadczenie
+            <input name="experience" type="number" min="0" value="0" required placeholder="Np. 12000" />
+          </label>
+          <label>
+            Złoto
+            <input name="gold" type="number" min="0" value="0" required placeholder="Np. 5000" />
+          </label>
+        </div>
+
+        <label>
+          Opis
+          <textarea name="description" rows="3" required placeholder="Krótki opis zadania..."></textarea>
+        </label>
+
+        <label>
+          Przedmioty w nagrodzie — jeden przedmiot w jednej linii
+          <textarea name="rewardItems" rows="5" placeholder="Format: Nazwa przedmiotu | ilość&#10;Mikstura leczenia | 3&#10;Klucz | 1"></textarea>
+        </label>
+
+        <label>
+          Kroki — użyj #, ##, ### lub ####, aby tworzyć kolejne poziomy podpunktów
+          <div class="format-toolbar" aria-label="Formatowanie tekstu">
+            <button type="button" class="format-btn" data-format="bold" title="Pogrubienie: Shift+B"><strong>B</strong></button>
+            <button type="button" class="format-btn" data-format="italic" title="Pochylenie: Shift+I"><em>I</em></button>
+            <button type="button" class="format-btn" data-format="underline" title="Podkreślenie: Shift+U"><u>U</u></button>
+            <span class="format-help">Skróty: Shift+B, Shift+I, Shift+U</span>
+          </div>
+          <textarea id="stepsEditor" name="steps" rows="12" required placeholder="Porozmawiaj z NPC-em&#10;# Wybierz odpowiedź&#10;## NPC odpowiada...&#10;### Kolejna odpowiedź&#10;#### Dodatkowa informacja"></textarea>
+        </label>
+
+        <button id="saveQuestBtn" class="primary-btn" type="submit">Zapisz questa</button>
+      </form>
+    </section>
+
+    <section class="panel tips-panel">
+      <h2>Jak rozwijać stronę dalej?</h2>
+      <p>Możesz później dodać logowanie, bazę danych, screeny map, komentarze graczy, panel administratora albo import questów z pliku JSON.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Projekt fanowski. Margonem i powiązane znaki należą do ich właścicieli.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
