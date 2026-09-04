@@ -40,6 +40,9 @@ const formatButtons = document.querySelectorAll(".format-btn");
 const categoryFolders = document.querySelectorAll(".category-folder");
 const rewardRows = document.querySelector("#rewardRows");
 const addRewardRowBtn = document.querySelector("#addRewardRowBtn");
+const rewardChoiceSection = document.querySelector("#rewardChoiceSection");
+const splitXpChoice = document.querySelector("#splitXpChoice");
+const singleXpOption = document.querySelector("#singleXpOption");
 
 
 function loadData() {
@@ -123,6 +126,95 @@ function selectQuest(id) {
   state.selectedId = id;
   renderQuestList();
   renderDetails();
+}
+
+function getTopLevelStepCount(steps = []) {
+  return steps.reduce((count, step) => {
+    const text = typeof step === "string" ? step : String(step);
+    return count + (/^#{1,4}\s*/.test(text) ? 0 : 1);
+  }, 0);
+}
+
+function buildChoiceRewardRows(quest, includeXp) {
+  const rows = [];
+  const rewardItems = Array.isArray(quest.rewardItems) ? quest.rewardItems : [];
+
+  rewardItems.forEach(item => {
+    rows.push(`
+      <div class="choice-reward-row">
+        <span class="choice-check">□</span>
+        <span class="choice-arrow">↳</span>
+        <span class="choice-reward-name rarity-${item.rarity || "zwykly"}">${escapeHtml(item.name)}</span>
+        <span class="choice-reward-qty">| ${Number(item.quantity || 1)}</span>
+      </div>`);
+  });
+
+  if (includeXp && Number(quest.experience || 0) > 0) {
+    rows.push(`
+      <div class="choice-reward-row">
+        <span class="choice-check">□</span>
+        <span class="choice-arrow">↳</span>
+        <span>Punkty doświadczenia ${Number(quest.experience || 0).toLocaleString("pl-PL")}</span>
+      </div>`);
+  }
+
+  return rows.join("");
+}
+
+function renderRewardChoice(quest) {
+  if (!rewardChoiceSection) return;
+  const choice = quest.rewardChoice || {};
+  const choiceText = (choice.text || "").trim();
+  const enabled = Boolean(choiceText || choice.splitXp || choice.hasContinuation || choice.singleHasXp === false);
+
+  if (!enabled) {
+    rewardChoiceSection.classList.add("hidden");
+    rewardChoiceSection.innerHTML = "";
+    return;
+  }
+
+  const stepNumber = getTopLevelStepCount(quest.steps || []) + 1;
+  const heading = choiceText || "Wybór nagrody";
+  const split = Boolean(choice.splitXp);
+  const singleHasXp = choice.singleHasXp !== false;
+
+  let variantsHtml = "";
+  if (split) {
+    variantsHtml = `
+      <div class="choice-variants split">
+        <div class="choice-variant active">
+          <div class="choice-variant-head"><span class="choice-box checked">✓</span><strong>XP</strong><span>z punktami doświadczenia</span></div>
+          <div class="choice-rewards">${buildChoiceRewardRows(quest, true)}</div>
+        </div>
+        <div class="choice-variant">
+          <div class="choice-variant-head"><span class="choice-box">□</span><strong class="muted-xp">XP</strong><span>bez punktów doświadczenia</span></div>
+          <div class="choice-rewards">${buildChoiceRewardRows(quest, false)}</div>
+        </div>
+      </div>`;
+  } else {
+    variantsHtml = `
+      <div class="choice-variants single">
+        <div class="choice-variant active">
+          <div class="choice-variant-head"><span class="choice-box checked">✓</span>${singleHasXp ? '<strong>XP</strong><span>z punktami doświadczenia</span>' : '<strong class="muted-xp">XP</strong><span>bez punktów doświadczenia</span>'}</div>
+          <div class="choice-rewards">${buildChoiceRewardRows(quest, singleHasXp)}</div>
+        </div>
+      </div>`;
+  }
+
+  const continuationHtml = choice.hasContinuation
+    ? `<div class="choice-continuation"><span class="choice-box checked">✓</span><span class="choice-cont-arrow">→</span><strong>ciąg dalszy questa</strong></div>`
+    : "";
+
+  rewardChoiceSection.innerHTML = `
+    <div class="choice-step-header">
+      <span class="choice-step-number">${stepNumber}</span>
+      <span class="choice-box checked">✓</span>
+      <span class="choice-heading-text">${formatQuestText(heading)}</span>
+    </div>
+    ${variantsHtml}
+    ${continuationHtml}
+  `;
+  rewardChoiceSection.classList.remove("hidden");
 }
 
 function renderDetails() {
@@ -235,6 +327,8 @@ function renderDetails() {
       delete lastItemAtLevel[deeper];
     }
   });
+
+  renderRewardChoice(quest);
 }
 
 function toggleStep(questId, stepIndex, checked) {
@@ -387,13 +481,23 @@ function openQuestForm(quest = null) {
     addQuestForm.elements.description.value = quest.description;
     renderRewardRows(quest.rewardItems || []);
     addQuestForm.elements.steps.value = quest.steps.join("\n");
+    const rewardChoice = quest.rewardChoice || {};
+    addQuestForm.elements.rewardChoiceText.value = rewardChoice.text || "";
+    addQuestForm.elements.splitXpChoice.checked = Boolean(rewardChoice.splitXp);
+    addQuestForm.elements.singleHasXp.checked = rewardChoice.singleHasXp !== false;
+    addQuestForm.elements.hasContinuation.checked = Boolean(rewardChoice.hasContinuation);
   } else {
     questFormTitle.textContent = "Dodaj nowego questa";
     saveQuestBtn.textContent = "Zapisz questa";
     addQuestForm.elements.editId.value = "";
     renderRewardRows([]);
+    addQuestForm.elements.rewardChoiceText.value = "";
+    addQuestForm.elements.splitXpChoice.checked = false;
+    addQuestForm.elements.singleHasXp.checked = true;
+    addQuestForm.elements.hasContinuation.checked = false;
   }
 
+  syncXpChoiceEditor();
   addQuestPanel.classList.remove("hidden");
   addQuestPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -427,6 +531,12 @@ addQuestForm.addEventListener("submit", event => {
   const gold = Number(data.get("gold")) || 0;
   const description = data.get("description").trim();
   const rewardItems = collectRewardItems();
+  const rewardChoice = {
+    text: String(data.get("rewardChoiceText") || "").trim(),
+    splitXp: data.get("splitXpChoice") === "on",
+    singleHasXp: data.get("singleHasXp") === "on",
+    hasContinuation: data.get("hasContinuation") === "on"
+  };
   const steps = data.get("steps")
     .split("\n")
     .map(step => step.trim())
@@ -445,6 +555,7 @@ addQuestForm.addEventListener("submit", event => {
       experience,
       gold,
       rewardItems,
+      rewardChoice,
       description,
       steps
     };
@@ -465,7 +576,7 @@ addQuestForm.addEventListener("submit", event => {
     id = `${baseId}-${suffix++}`;
   }
 
-  const quest = { id, title, level, category, start, experience, gold, rewardItems, description, steps };
+  const quest = { id, title, level, category, start, experience, gold, rewardItems, rewardChoice, description, steps };
   state.quests.push(quest);
   saveQuests();
 

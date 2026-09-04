@@ -900,3 +900,83 @@ footer {
 
 /* Rzadkości przedmiotów */
 .reward-item-name{font-weight:900}.rarity-zwykly{color:#d6d6d6}.rarity-unikatowy{color:#ff9900}.rarity-heroiczny{color:#0088b5}.rarity-legendarny{color:#ffff03}.rarity-ulepszony{color:#aa04b0}
+
+
+/* Wariant odpowiedzi: z XP / bez XP */
+.choice-editor-block {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel-2);
+}
+.choice-editor-heading h3 { margin: 0; }
+.toggle-row {
+  display: flex !important;
+  align-items: center;
+  gap: 10px !important;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel) 84%, transparent);
+}
+.toggle-row input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--success); }
+.reward-choice-section { display: grid; gap: 10px; margin-top: 16px; }
+.choice-step-header {
+  display: grid;
+  grid-template-columns: 38px 24px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: 15px;
+  background: var(--panel-2);
+}
+.choice-step-number {
+  display: grid; place-items: center; width: 32px; height: 32px;
+  border-radius: 10px; background: rgba(245,158,11,.14);
+  color: var(--accent-2); font-weight: 900;
+}
+.choice-heading-text { font-weight: 700; }
+.choice-box { font-size: 1.15rem; color: var(--muted); }
+.choice-box.checked { color: var(--success); font-weight: 900; }
+.choice-variants { display: grid; gap: 10px; margin-left: 30px; }
+.choice-variants.split { grid-template-columns: 1fr 1fr; gap: 0; }
+.choice-variants.split .choice-variant:first-child { border-radius: 15px 0 0 15px; }
+.choice-variants.split .choice-variant:last-child { border-radius: 0 15px 15px 0; border-left: 0; }
+.choice-variants.single { grid-template-columns: 1fr; }
+.choice-variant {
+  border: 1px solid var(--border); border-radius: 15px; overflow: hidden;
+  background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+}
+.choice-variant.active { border-color: var(--accent); }
+.choice-variant-head {
+  display: flex; align-items: center; gap: 12px; padding: 13px 15px;
+  border-bottom: 1px solid var(--border);
+}
+.choice-variant-head strong { color: var(--accent-2); font-size: 1.05rem; }
+.choice-variant-head .muted-xp { color: var(--muted); }
+.choice-rewards { display: grid; gap: 8px; padding: 10px 12px; }
+.choice-reward-row {
+  display: grid; grid-template-columns: 24px 28px auto 1fr; align-items: center;
+  gap: 7px; padding: 10px 12px; border-left: 2px dashed var(--accent);
+  border-radius: 10px; background: var(--panel-2);
+}
+.choice-arrow { color: var(--accent-2); font-weight: 900; }
+.choice-reward-name { font-weight: 700; }
+.choice-reward-qty { color: var(--text); }
+.choice-check { color: var(--text); font-size: 1.1rem; }
+.choice-continuation {
+  display: flex; align-items: center; gap: 12px; margin-left: 30px;
+  padding: 13px 15px; border: 1px solid var(--accent); border-radius: 15px;
+  background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+}
+.choice-cont-arrow { color: var(--accent-2); font-size: 1.4rem; }
+@media (max-width: 760px) {
+  .choice-variants.split { grid-template-columns: 1fr; gap: 10px; }
+  .choice-variants.split .choice-variant:first-child,
+  .choice-variants.split .choice-variant:last-child { border-radius: 15px; border-left: 1px solid var(--border); }
+  .choice-variants, .choice-continuation { margin-left: 0; }
+}

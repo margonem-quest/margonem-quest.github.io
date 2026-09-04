@@ -90,6 +90,8 @@
 
           <h3>Kroki questa</h3>
           <ol id="stepsList" class="steps-list"></ol>
+
+          <div id="rewardChoiceSection" class="reward-choice-section hidden"></div>
         </article>
       </section>
     </section>
@@ -159,6 +161,37 @@
           </div>
           <textarea id="stepsEditor" name="steps" rows="12" required placeholder="Porozmawiaj z NPC-em&#10;# Wybierz odpowiedź&#10;## NPC odpowiada...&#10;### Kolejna odpowiedź&#10;#### Dodatkowa informacja"></textarea>
         </label>
+
+        <section class="choice-editor-block">
+          <div class="choice-editor-heading">
+            <div>
+              <p class="eyebrow">Opcjonalnie</p>
+              <h3>Wariant odpowiedzi / nagrody</h3>
+            </div>
+          </div>
+
+          <label>
+            Tekst odpowiedzi
+            <input name="rewardChoiceText" placeholder="Np. Mamy do wyboru nagrodę:" />
+          </label>
+
+          <label class="toggle-row">
+            <input id="splitXpChoice" name="splitXpChoice" type="checkbox" />
+            <span>Podziel odpowiedź na pół: <strong>z punktami doświadczenia</strong> / <strong>bez punktów doświadczenia</strong></span>
+          </label>
+
+          <div id="singleXpOption" class="single-xp-option">
+            <label class="toggle-row">
+              <input name="singleHasXp" type="checkbox" checked />
+              <span>Jeśli nie ma podziału, ta odpowiedź daje punkty doświadczenia</span>
+            </label>
+          </div>
+
+          <label class="toggle-row">
+            <input name="hasContinuation" type="checkbox" />
+            <span>Po nagrodzie pokaż opcję <strong>„ciąg dalszy questa”</strong></span>
+          </label>
+        </section>
 
         <button id="saveQuestBtn" class="primary-btn" type="submit">Zapisz questa</button>
       </form>
