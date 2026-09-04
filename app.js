@@ -161,7 +161,7 @@ function renderDetails() {
       li.innerHTML = `
         ${imageHtml}
         <span class="reward-item-info">
-          <span>${escapeHtml(item.name)}</span>
+          <span class="reward-item-name rarity-${item.rarity || "zwykly"}">${escapeHtml(item.name)}</span>
           ${descriptionHtml}
         </span>
         <strong>× ${Number(item.quantity || 1)}</strong>
@@ -295,6 +295,17 @@ function createRewardRow(item = {}) {
       </div>
 
       <label>
+        Rzadkość
+        <select class="reward-rarity-input">
+          <option value="zwykly">Zwykły</option>
+          <option value="unikatowy">Unikatowy</option>
+          <option value="heroiczny">Heroiczny</option>
+          <option value="legendarny">Legendarny</option>
+          <option value="ulepszony">Ulepszony</option>
+        </select>
+      </label>
+
+      <label>
         Opis przedmiotu
         <textarea class="reward-description-input" rows="5" placeholder="Wpisz opis. Możesz używać wielu linii.">${escapeHtml(description)}</textarea>
       </label>
@@ -303,6 +314,9 @@ function createRewardRow(item = {}) {
     <button class="reward-remove-btn" type="button" aria-label="Usuń przedmiot" title="Usuń przedmiot">✕</button>
     <input class="reward-image-data" type="hidden" value="${escapeHtml(image)}">
   `;
+
+  const rarityInput = row.querySelector(".reward-rarity-input");
+  rarityInput.value = item.rarity || "zwykly";
 
   const picker = row.querySelector(".reward-file-input");
   const content = row.querySelector(".reward-square-content");
@@ -348,6 +362,7 @@ function collectRewardItems() {
       name: row.querySelector(".reward-name-input").value.trim(),
       quantity: Math.max(1, Number(row.querySelector(".reward-quantity-input").value) || 1),
       image: row.querySelector(".reward-image-data").value || "",
+      rarity: row.querySelector(".reward-rarity-input").value || "zwykly",
       description: row.querySelector(".reward-description-input").value
     }))
     .filter(item => item.name);

@@ -897,3 +897,6 @@ footer {
     width: 100%;
   }
 }
+
+/* Rzadkości przedmiotów */
+.reward-item-name{font-weight:900}.rarity-zwykly{color:#d6d6d6}.rarity-unikatowy{color:#ff9900}.rarity-heroiczny{color:#0088b5}.rarity-legendarny{color:#ffff03}.rarity-ulepszony{color:#aa04b0}
