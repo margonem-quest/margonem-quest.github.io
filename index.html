@@ -140,9 +140,30 @@
           <textarea name="description" rows="3" required placeholder="Krótki opis zadania..."></textarea>
         </label>
 
+        <div class="reward-editor">
+          <div class="reward-editor-heading">
+            <span>Grafiki przedmiotów (maks. 2)</span>
+            <small>Kliknij kwadrat z plusem i wybierz grafikę z pulpitu.</small>
+          </div>
+          <div class="reward-image-pickers">
+            <label class="reward-image-picker" id="rewardImagePicker1">
+              <input id="rewardImageInput1" type="file" accept="image/*" hidden>
+              <span class="reward-image-plus">+</span>
+              <img id="rewardImagePreview1" alt="" class="hidden">
+            </label>
+            <label class="reward-image-picker" id="rewardImagePicker2">
+              <input id="rewardImageInput2" type="file" accept="image/*" hidden>
+              <span class="reward-image-plus">+</span>
+              <img id="rewardImagePreview2" alt="" class="hidden">
+            </label>
+          </div>
+          <input type="hidden" name="rewardImage1" value="">
+          <input type="hidden" name="rewardImage2" value="">
+        </div>
+
         <label>
-          Przedmioty w nagrodzie — nazwa | ilość | adres grafiki | zawartość (opcjonalnie)
-          <textarea name="rewardItems" rows="6" placeholder="Mikstura | 3 | https://.../mikstura.png&#10;Skrzynia | 1 | https://.../skrzynia.png | Mikstura ×5; Klucz ×1"></textarea>
+          Przedmioty w nagrodzie — jeden przedmiot w jednej linii
+          <textarea name="rewardItems" rows="6" placeholder="Mikstura leczenia | 3&#10;Skrzynia eventowa | 1 | Mikstura ×5; Klucz ×1"></textarea>
         </label>
 
         <label>

@@ -38,6 +38,11 @@ const saveQuestBtn = document.querySelector("#saveQuestBtn");
 const stepsEditor = document.querySelector("#stepsEditor");
 const formatButtons = document.querySelectorAll(".format-btn");
 const categoryFolders = document.querySelectorAll(".category-folder");
+const rewardImageInput1 = document.querySelector("#rewardImageInput1");
+const rewardImageInput2 = document.querySelector("#rewardImageInput2");
+const rewardImagePreview1 = document.querySelector("#rewardImagePreview1");
+const rewardImagePreview2 = document.querySelector("#rewardImagePreview2");
+
 
 function loadData() {
   const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -246,6 +251,34 @@ categoryFolders.forEach(button => button.addEventListener("click", () => {
   renderQuestList();
 }));
 
+
+function setRewardImagePreview(slot, dataUrl = "") {
+  const preview = slot === 1 ? rewardImagePreview1 : rewardImagePreview2;
+  const hidden = addQuestForm.elements[slot === 1 ? "rewardImage1" : "rewardImage2"];
+  hidden.value = dataUrl || "";
+  if (dataUrl) {
+    preview.src = dataUrl;
+    preview.classList.remove("hidden");
+    preview.parentElement.querySelector(".reward-image-plus").classList.add("hidden");
+  } else {
+    preview.src = "";
+    preview.classList.add("hidden");
+    preview.parentElement.querySelector(".reward-image-plus").classList.remove("hidden");
+  }
+}
+
+function setupRewardImageInput(input, slot) {
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setRewardImagePreview(slot, reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+setupRewardImageInput(rewardImageInput1, 1);
+setupRewardImageInput(rewardImageInput2, 2);
+
 function openQuestForm(quest = null) {
   addQuestForm.reset();
 
@@ -261,6 +294,8 @@ function openQuestForm(quest = null) {
     addQuestForm.elements.experience.value = quest.experience || 0;
     addQuestForm.elements.gold.value = quest.gold || 0;
     addQuestForm.elements.description.value = quest.description;
+    setRewardImagePreview(1, quest.rewardImages?.[0] || quest.rewardItems?.[0]?.image || "");
+    setRewardImagePreview(2, quest.rewardImages?.[1] || quest.rewardItems?.[1]?.image || "");
     addQuestForm.elements.rewardItems.value = (quest.rewardItems || [])
       .map(item => [item.name, item.quantity, item.image || "", item.contents || ""].join(" | "))
       .join("\n");
@@ -269,6 +304,8 @@ function openQuestForm(quest = null) {
     questFormTitle.textContent = "Dodaj nowego questa";
     saveQuestBtn.textContent = "Zapisz questa";
     addQuestForm.elements.editId.value = "";
+    setRewardImagePreview(1, "");
+    setRewardImagePreview(2, "");
   }
 
   addQuestPanel.classList.remove("hidden");
@@ -288,6 +325,8 @@ editQuestBtn.addEventListener("click", () => {
 closeAddFormBtn.addEventListener("click", () => {
   addQuestPanel.classList.add("hidden");
   addQuestForm.reset();
+  setRewardImagePreview(1, "");
+  setRewardImagePreview(2, "");
 });
 
 addQuestForm.addEventListener("submit", event => {
@@ -310,11 +349,18 @@ addQuestForm.addEventListener("submit", event => {
       const parts = line.split("|");
       const name = (parts[0] || "").trim();
       const quantity = Math.max(1, Number((parts[1] || "1").trim()) || 1);
-      const image = (parts[2] || "").trim();
-      const contents = parts.slice(3).join("|").trim();
-      return { name, quantity, image, contents };
+      const contents = parts.slice(2).join("|").trim();
+      return { name, quantity, contents };
     })
     .filter(item => item.name);
+  const rewardImages = [
+    data.get("rewardImage1") || "",
+    data.get("rewardImage2") || ""
+  ];
+  rewardItems.forEach((item, index) => {
+    if (rewardImages[index]) item.image = rewardImages[index];
+  });
+
   const steps = data.get("steps")
     .split("\n")
     .map(step => step.trim())
@@ -333,6 +379,7 @@ addQuestForm.addEventListener("submit", event => {
       experience,
       gold,
       rewardItems,
+      rewardImages,
       description,
       steps
     };
@@ -353,7 +400,7 @@ addQuestForm.addEventListener("submit", event => {
     id = `${baseId}-${suffix++}`;
   }
 
-  const quest = { id, title, level, category, start, experience, gold, rewardItems, description, steps };
+  const quest = { id, title, level, category, start, experience, gold, rewardItems, rewardImages, description, steps };
   state.quests.push(quest);
   saveQuests();
 
