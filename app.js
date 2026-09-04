@@ -7,8 +7,7 @@ const THEME_KEY = "margonemQuestHelper.theme";
 const state = {
   quests: [],
   selectedId: null,
-  progress: {},
-  category: "all"
+  progress: {}
 };
 
 const questList = document.querySelector("#questList");
@@ -37,11 +36,6 @@ const questFormTitle = document.querySelector("#questFormTitle");
 const saveQuestBtn = document.querySelector("#saveQuestBtn");
 const stepsEditor = document.querySelector("#stepsEditor");
 const formatButtons = document.querySelectorAll(".format-btn");
-const categoryFolders = document.querySelectorAll(".category-folder");
-const rewardRows = document.querySelector("#rewardRows");
-const addRewardRowBtn = document.querySelector("#addRewardRowBtn");
-
-
 
 function loadData() {
   const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -49,7 +43,6 @@ function loadData() {
 
   const removedDemoIds = new Set(["zaginiony-zwiadowca", "stara-mapa"]);
   state.quests = state.quests.filter(quest => !removedDemoIds.has(quest.id));
-  state.quests = state.quests.map(quest => ({...quest, category: quest.category || (/kred/i.test(quest.title || "") ? "event" : "normal")}));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.quests));
 
   state.progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || "{}");
@@ -92,8 +85,7 @@ function getFilteredQuests() {
       ...(quest.steps || [])
     ].join(" ").toLowerCase().includes(query);
 
-    const inCategory = state.category === "all" || (quest.category || "normal") === state.category;
-    return inText && inCategory && matchesLevel(Number(quest.level), level);
+    return inText && matchesLevel(Number(quest.level), level);
   });
 }
 
@@ -152,10 +144,7 @@ function renderDetails() {
     rewardItemsSection.classList.remove("hidden");
     rewardItems.forEach(item => {
       const li = document.createElement("li");
-      li.className = "reward-item";
-      const imageHtml = item.image ? `<img class="reward-item-image" src="${escapeHtml(item.image)}" alt="" loading="lazy" onerror="this.style.display='none'">` : `<span class="reward-item-placeholder">🎁</span>`;
-      const contentsHtml = item.contents ? `<small class="reward-item-contents">${escapeHtml(item.contents)}</small>` : "";
-      li.innerHTML = `${imageHtml}<span class="reward-item-info"><span>${escapeHtml(item.name)}</span>${contentsHtml}</span><strong>× ${Number(item.quantity || 1)}</strong>`;
+      li.innerHTML = `<span>${escapeHtml(item.name)}</span><strong>× ${Number(item.quantity || 1)}</strong>`;
       rewardItemsList.appendChild(li);
     });
   } else {
@@ -244,101 +233,6 @@ resetProgressBtn.addEventListener("click", () => {
 
 searchInput.addEventListener("input", renderQuestList);
 levelFilter.addEventListener("change", renderQuestList);
-categoryFolders.forEach(button => button.addEventListener("click", () => {
-  state.category = button.dataset.category;
-  categoryFolders.forEach(b => b.classList.toggle("active", b === button));
-  renderQuestList();
-}));
-
-
-
-function createRewardRow(item = {}) {
-  const row = document.createElement("div");
-  row.className = "reward-row";
-
-  const imageData = item.image || "";
-  const quantity = Number(item.quantity || 1);
-  const contents = item.contents || "";
-
-  row.innerHTML = `
-    <label class="reward-upload-box" title="Dodaj grafikę">
-      <input class="reward-file-input" type="file" accept="image/*" hidden>
-      <span class="reward-upload-plus">+</span>
-    </label>
-
-    <div class="reward-preview-box" aria-label="Podgląd grafiki">
-      ${imageData
-        ? `<img src="${escapeHtml(imageData)}" alt="">`
-        : `<span class="reward-preview-placeholder">🖼️</span>`}
-    </div>
-
-    <div class="reward-row-fields">
-      <label>
-        Nazwa przedmiotu
-        <input class="reward-name-input" type="text" value="${escapeHtml(item.name || "")}" placeholder="Wpisz nazwę przedmiotu..." required>
-      </label>
-      <div class="reward-row-small-fields">
-        <label>
-          Ilość
-          <input class="reward-quantity-input" type="number" min="1" value="${quantity}">
-        </label>
-        <label>
-          Zawartość / opis (opcjonalnie)
-          <input class="reward-contents-input" type="text" value="${escapeHtml(contents)}" placeholder="Np. Mikstura ×5; Klucz ×1">
-        </label>
-      </div>
-    </div>
-
-    <button class="reward-delete-btn" type="button" title="Usuń przedmiot" aria-label="Usuń przedmiot">🗑️</button>
-    <input class="reward-image-data" type="hidden" value="${escapeHtml(imageData)}">
-  `;
-
-  const fileInput = row.querySelector(".reward-file-input");
-  const previewBox = row.querySelector(".reward-preview-box");
-  const imageDataInput = row.querySelector(".reward-image-data");
-  const deleteBtn = row.querySelector(".reward-delete-btn");
-
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files && fileInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result;
-      imageDataInput.value = dataUrl;
-      previewBox.innerHTML = `<img src="${dataUrl}" alt="">`;
-    };
-    reader.readAsDataURL(file);
-  });
-
-  deleteBtn.addEventListener("click", () => {
-    row.remove();
-    if (!rewardRows.children.length) createRewardRow();
-  });
-
-  rewardRows.appendChild(row);
-}
-
-function renderRewardRows(items = []) {
-  rewardRows.innerHTML = "";
-  if (items.length) {
-    items.forEach(item => createRewardRow(item));
-  } else {
-    createRewardRow();
-  }
-}
-
-function collectRewardItems() {
-  return [...rewardRows.querySelectorAll(".reward-row")]
-    .map(row => ({
-      name: row.querySelector(".reward-name-input").value.trim(),
-      quantity: Math.max(1, Number(row.querySelector(".reward-quantity-input").value) || 1),
-      image: row.querySelector(".reward-image-data").value || "",
-      contents: row.querySelector(".reward-contents-input").value.trim()
-    }))
-    .filter(item => item.name);
-}
-
-addRewardRowBtn.addEventListener("click", () => createRewardRow());
 
 function openQuestForm(quest = null) {
   addQuestForm.reset();
@@ -350,18 +244,18 @@ function openQuestForm(quest = null) {
     addQuestForm.elements.editId.value = quest.id;
     addQuestForm.elements.title.value = quest.title;
     addQuestForm.elements.level.value = quest.level;
-    addQuestForm.elements.category.value = quest.category || "normal";
     addQuestForm.elements.start.value = quest.start;
     addQuestForm.elements.experience.value = quest.experience || 0;
     addQuestForm.elements.gold.value = quest.gold || 0;
     addQuestForm.elements.description.value = quest.description;
-    renderRewardRows(quest.rewardItems || []);
+    addQuestForm.elements.rewardItems.value = (quest.rewardItems || [])
+      .map(item => `${item.name} | ${item.quantity}`)
+      .join("\n");
     addQuestForm.elements.steps.value = quest.steps.join("\n");
   } else {
     questFormTitle.textContent = "Dodaj nowego questa";
     saveQuestBtn.textContent = "Zapisz questa";
     addQuestForm.elements.editId.value = "";
-    renderRewardRows([]);
   }
 
   addQuestPanel.classList.remove("hidden");
@@ -381,7 +275,6 @@ editQuestBtn.addEventListener("click", () => {
 closeAddFormBtn.addEventListener("click", () => {
   addQuestPanel.classList.add("hidden");
   addQuestForm.reset();
-  renderRewardRows([]);
 });
 
 addQuestForm.addEventListener("submit", event => {
@@ -391,12 +284,21 @@ addQuestForm.addEventListener("submit", event => {
   const editId = data.get("editId");
   const title = data.get("title").trim();
   const level = Number(data.get("level"));
-  const category = data.get("category") || "normal";
   const start = data.get("start").trim();
   const experience = Number(data.get("experience")) || 0;
   const gold = Number(data.get("gold")) || 0;
   const description = data.get("description").trim();
-  const rewardItems = collectRewardItems();
+  const rewardItems = data.get("rewardItems")
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      const parts = line.split("|");
+      const name = (parts[0] || "").trim();
+      const quantity = Math.max(1, Number((parts[1] || "1").trim()) || 1);
+      return { name, quantity };
+    })
+    .filter(item => item.name);
   const steps = data.get("steps")
     .split("\n")
     .map(step => step.trim())
@@ -410,7 +312,6 @@ addQuestForm.addEventListener("submit", event => {
       ...state.quests[questIndex],
       title,
       level,
-      category,
       start,
       experience,
       gold,
@@ -435,7 +336,7 @@ addQuestForm.addEventListener("submit", event => {
     id = `${baseId}-${suffix++}`;
   }
 
-  const quest = { id, title, level, category, start, experience, gold, rewardItems, description, steps };
+  const quest = { id, title, level, start, experience, gold, rewardItems, description, steps };
   state.quests.push(quest);
   saveQuests();
 

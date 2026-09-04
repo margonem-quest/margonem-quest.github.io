@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Nieoficjalna pomoc do questów w Margonem." />
-  <title>Margonem Quest</title>
+  <title>Margonem Quest ( Beta)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -12,7 +12,7 @@
     <div class="container header-inner">
       <div>
         <p class="eyebrow">Nieoficjalny projekt fanowski</p>
-        <h1>Margonem Quest</h1>
+        <h1>Margonem Quest ( Beta)</h1>
         <p class="subtitle">Szybko znajdź questa, sprawdź kolejne kroki i zaznacz swój postęp.</p>
       </div>
       <button id="themeToggle" class="ghost-btn" type="button" aria-label="Zmień motyw">🌙</button>
@@ -40,11 +40,7 @@
           <h2>Questy</h2>
           <button id="showAddFormBtn" class="primary-btn small-btn" type="button">+ Dodaj</button>
         </div>
-        <div id="categoryFolders" class="category-folders">
-<button type="button" class="category-folder active" data-category="all">📚 Wszystkie</button>
-<button type="button" class="category-folder" data-category="event">🎉 Eventowe</button>
-<button type="button" class="category-folder" data-category="normal">📜 Zwykłe</button>
-</div><div id="questList" class="quest-list"></div>
+        <div id="questList" class="quest-list"></div>
       </aside>
 
       <section class="panel quest-details-panel">
@@ -115,13 +111,6 @@
             <input name="level" type="number" min="1" required placeholder="25" />
           </label>
           <label>
-            Folder / kategoria
-            <select name="category" required>
-              <option value="normal">Zwykłe</option>
-              <option value="event">Eventowe</option>
-            </select>
-          </label>
-          <label>
             NPC / miejsce startu
             <input name="start" required placeholder="Np. Ithan — Strażnik" />
           </label>
@@ -140,18 +129,10 @@
           <textarea name="description" rows="3" required placeholder="Krótki opis zadania..."></textarea>
         </label>
 
-        <div class="reward-editor">
-          <div class="reward-editor-heading">
-            <span>Przedmioty w nagrodzie</span>
-            <small>Każdy przedmiot ma własną grafikę, podgląd i nazwę.</small>
-          </div>
-
-          <div id="rewardRows" class="reward-rows"></div>
-
-          <button id="addRewardRowBtn" class="reward-add-row-btn" type="button">
-            + Dodaj kolejny przedmiot
-          </button>
-        </div>
+        <label>
+          Przedmioty w nagrodzie — jeden przedmiot w jednej linii
+          <textarea name="rewardItems" rows="5" placeholder="Format: Nazwa przedmiotu | ilość&#10;Mikstura leczenia | 3&#10;Klucz | 1"></textarea>
+        </label>
 
         <label>
           Kroki — użyj #, ##, ### lub ####, aby tworzyć kolejne poziomy podpunktów
